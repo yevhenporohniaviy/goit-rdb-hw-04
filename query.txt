@@ -1,0 +1,162 @@
+1
+
+CREATE DATABASE LibraryManagement;
+
+USE LibraryManagement;
+
+CREATE TABLE authors (
+	author_id INT auto_increment primary key,
+    author_name varchar(255)
+);
+CREATE TABLE genres (
+	genre_id INT auto_increment primary key,
+    genre_name varchar(255)
+);
+CREATE TABLE books (
+	book_id INT auto_increment primary key,
+    title varchar(255),
+    publication_year year,
+    author_id INT,
+    genre_id INT,
+    FOREIGN KEY (author_id) REFERENCES authors(author_id),
+    FOREIGN KEY (genre_id) REFERENCES genres(genre_id)
+);
+
+CREATE TABLE users (
+	user_id INT auto_increment primary key,
+    username varchar(255),
+    email varchar(255)
+);
+
+CREATE TABLE borrowed_books (
+	borrow_id INT auto_increment primary key,
+    book_id INT,
+    user_id INT,
+    borrow_date DATE,
+    return_date DATE,
+    FOREIGN KEY (book_id) REFERENCES books(book_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+2
+
+USE LibraryManagement;
+
+INSERT INTO authors (author_name) 
+VALUES ("J.K. Rowling"),("Stephen King");
+
+
+INSERT INTO genres (genre_name) 
+VALUES ("Fantasy"), ("Horror");
+
+
+INSERT INTO books (title, publication_year, author_id, genre_id) 
+VALUES ("Harry Potter and the Prisoner of Azkaban", 2014, 1, 1), ("Pet Sematary", 1983, 2,2);
+
+
+INSERT INTO users (username, email) 
+VALUES ("Y.Porohniaviy", "email@email.com"), ("D.Popov", "test@test.com");
+
+
+
+INSERT INTO borrowed_books (book_id, user_id, borrow_date, return_date) 
+VALUES (1, 2, "2023-12-05", "2024-01-12"), (2, 1, "2023-11-05", "2024-02-12");
+
+3 
+SELECT * FROM order_details od
+INNER JOIN orders o ON o.id = od.order_id
+INNER JOIN customers ct ON ct.id = o.customer_id
+INNER JOIN employees e ON e.employee_id = o.employee_id
+INNER JOIN shippers sh ON sh.id = o.shipper_id
+INNER JOIN products p ON p.id = od.product_id
+INNER JOIN suppliers sp ON sp.id = p.supplier_id
+INNER JOIN categories c ON c.id = p.category_id;
+
+4.1
+SELECT COUNT(od.id)
+FROM order_details od
+INNER JOIN orders o ON o.id = od.order_id
+INNER JOIN customers ct ON ct.id = o.customer_id
+INNER JOIN employees e ON e.employee_id = o.employee_id
+INNER JOIN shippers sh ON sh.id = o.shipper_id
+INNER JOIN products p ON p.id = od.product_id
+INNER JOIN suppliers sp ON sp.id = p.supplier_id
+INNER JOIN categories c ON c.id = p.category_id;
+
+
+4.2
+
+SELECT COUNT(od.id)
+FROM order_details od
+LEFT JOIN orders o ON o.id = od.order_id
+RIGHT JOIN customers ct ON ct.id = o.customer_id
+INNER JOIN employees e ON e.employee_id = o.employee_id
+INNER JOIN shippers sh ON sh.id = o.shipper_id
+INNER JOIN products p ON p.id = od.product_id
+INNER JOIN suppliers sp ON sp.id = p.supplier_id
+INNER JOIN categories c ON c.id = p.category_id;
+
+Не змінилась кількість. Тому, що всі рядки в таблицях, які приєднувалися за допомогою INNER JOIN, мали відповідні значення в обох таблицях. У такому випадку, перетворення на LEFT JOIN не змінить кількість рядків у результаті.
+
+4.3 
+SELECT COUNT(od.id) FROM order_details od
+INNER JOIN orders o ON o.id = od.order_id
+INNER JOIN customers ct ON ct.id = o.customer_id
+INNER JOIN employees e ON e.employee_id = o.employee_id
+INNER JOIN shippers sh ON sh.id = o.shipper_id
+INNER JOIN products p ON p.id = od.product_id
+INNER JOIN suppliers sp ON sp.id = p.supplier_id
+INNER JOIN categories c ON c.id = p.category_id
+WHERE e.employee_id > 3 AND e.employee_id <= 10;
+
+4.4 
+SELECT c.name, COUNT(od.id) AS totalOrdersByCategory, ROUND(AVG(od.quantity), 1) AS avgQuantity
+FROM order_details od
+INNER JOIN orders o ON o.id = od.order_id
+INNER JOIN customers ct ON ct.id = o.customer_id
+INNER JOIN employees e ON e.employee_id = o.employee_id
+INNER JOIN shippers sh ON sh.id = o.shipper_id
+INNER JOIN products p ON p.id = od.product_id
+INNER JOIN suppliers sp ON sp.id = p.supplier_id
+INNER JOIN categories c ON c.id = p.category_id
+GROUP BY c.name;
+
+4.5 
+SELECT c.name, COUNT(od.id) AS totalOrdersByCategory, ROUND(AVG(od.quantity), 1) AS avgQuantity
+FROM order_details od
+INNER JOIN orders o ON o.id = od.order_id
+INNER JOIN customers ct ON ct.id = o.customer_id
+INNER JOIN employees e ON e.employee_id = o.employee_id
+INNER JOIN shippers sh ON sh.id = o.shipper_id
+INNER JOIN products p ON p.id = od.product_id
+INNER JOIN suppliers sp ON sp.id = p.supplier_id
+INNER JOIN categories c ON c.id = p.category_id
+GROUP BY c.name
+HAVING avgQuantity > 21;
+
+4.6
+
+SELECT c.name, COUNT(od.id) AS totalOrdersByCategory, ROUND(AVG(od.quantity), 1) AS avgQuantity
+FROM order_details od
+INNER JOIN orders o ON o.id = od.order_id
+INNER JOIN customers ct ON ct.id = o.customer_id
+INNER JOIN employees e ON e.employee_id = o.employee_id
+INNER JOIN shippers sh ON sh.id = o.shipper_id
+INNER JOIN products p ON p.id = od.product_id
+INNER JOIN suppliers sp ON sp.id = p.supplier_id
+INNER JOIN categories c ON c.id = p.category_id
+GROUP BY c.name
+ORDER BY totalOrdersByCategory DESC;
+
+4.7 
+SELECT c.name, COUNT(od.id) AS totalOrdersByCategory, ROUND(AVG(od.quantity), 1) AS avgQuantity
+FROM order_details od
+INNER JOIN orders o ON o.id = od.order_id
+INNER JOIN customers ct ON ct.id = o.customer_id
+INNER JOIN employees e ON e.employee_id = o.employee_id
+INNER JOIN shippers sh ON sh.id = o.shipper_id
+INNER JOIN products p ON p.id = od.product_id
+INNER JOIN suppliers sp ON sp.id = p.supplier_id
+INNER JOIN categories c ON c.id = p.category_id
+GROUP BY c.name
+LIMIT 4 OFFSET 1;
